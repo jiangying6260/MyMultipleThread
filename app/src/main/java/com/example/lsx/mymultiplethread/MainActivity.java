@@ -1,9 +1,8 @@
 package com.example.lsx.mymultiplethread;
 
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
@@ -16,6 +15,21 @@ public class MainActivity extends AppCompatActivity {
     private Button mLoadImageButton;
     private Button mToastButton;
     private ProgressBar mProgressBar;
+
+    private Handler mHandler=new Handler(){
+        @Override
+        public void handleMessage(Message msg) {
+            switch (msg.what){
+                case 0:
+                    mProgressBar.setVisibility(View.VISIBLE);
+                    break;
+                case 1:
+                    mProgressBar.setProgress((int)msg.obj);
+                    break;
+            }
+
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,7 +44,34 @@ public class MainActivity extends AppCompatActivity {
         mLoadImageButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                new LoadImageTask().execute();
+               new Thread(
+                       new Runnable() {
+                           @Override
+                           public void run() {
+                               Message msg=new Message();
+                               msg.what=0;//表示显示progressbar
+                               mHandler.sendMessage(msg);
+
+                               for (int i = 1; i <11 ; i++) {
+                                   sleep();
+                                   Message msg1=new Message();
+                                   msg1.what=1;//表示progressbar向前走
+                                   msg1.obj=i*10;
+                                   mHandler.sendMessage(msg1);
+
+
+                               }
+                           }
+
+                           private void sleep() {
+                               try {
+                                   Thread.sleep(500);
+                               } catch (InterruptedException e) {
+                                   e.printStackTrace();
+                               }
+                           }
+                       }
+               ).start();
             }
         });
 
@@ -42,7 +83,8 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    class LoadImageTask extends AsyncTask<Void,Integer,Bitmap>{
+
+   /* class LoadImageTask extends AsyncTask<Void,Integer,Bitmap>{
 
         @Override
         protected void onPreExecute() {
@@ -79,6 +121,6 @@ public class MainActivity extends AppCompatActivity {
             mImageView.setImageBitmap(bitmap);
             mProgressBar.setVisibility(View.INVISIBLE);
         }
-    }
+    }*/
 
 }
